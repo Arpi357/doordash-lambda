@@ -1,0 +1,20 @@
+version: 0.2
+env:
+  variables:
+    FUNCTION_NAME: "doordash-processor"
+phases:
+  install:
+    commands:
+      - pip install --upgrade awscli
+      - pip install -r requirements.txt -t .
+  build:
+    commands:
+      - echo "Zipping Lambda function..."
+      - zip -r function.zip .
+  post_build:
+    commands:
+      - echo "Updating Lambda code..."
+      - aws lambda update-function-code --function-name $FUNCTION_NAME --zip-file fileb://function.zip --region ap-south-1
+artifacts:
+  files:
+    - function.zip
