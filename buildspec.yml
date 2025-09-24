@@ -1,20 +1,31 @@
 version: 0.2
+
 env:
   variables:
-    FUNCTION_NAME: "doordash-processor"
+    FUNCTION_NAME: doorDashProcessor
+    REGION: ap-south-1
+
 phases:
   install:
+    runtime-versions:
+      python: 3.11
     commands:
-      - pip install --upgrade awscli
-      - pip install -r requirements.txt -t .
+      - echo "Installing dependencies..."
+      - pip install -r requirements.txt -t package/
   build:
     commands:
-      - echo "Zipping Lambda function..."
-      - zip -r function.zip .
+      - echo "Building deployment package..."
+      - cp -r lambda_function.py package/
+      - cd package
+      - zip -r ../deployment_package.zip .
+      - cd ..
+      - echo "Deployment package created successfully."
   post_build:
     commands:
-      - echo "Updating Lambda code..."
-      - aws lambda update-function-code --function-name $FUNCTION_NAME --zip-file fileb://function.zip --region ap-south-1
+      - echo "Updating Lambda function..."
+      - aws lambda update-function-code --function-name $FUNCTION_NAME --zip-file fileb://deployment_package.zip --region $REGION
+      - echo "Lambda updated successfully."
+
 artifacts:
   files:
-    - function.zip
+    - deployment_package.zip
